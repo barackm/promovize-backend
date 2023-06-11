@@ -1,11 +1,12 @@
 import * as nodemailer from 'nodemailer';
+import { smtp } from '../local.config';
 
 const transporter = nodemailer.createTransport({
-  host: '',
-  port: 587,
+  host: smtp.host,
+  port: smtp.port,
   auth: {
-    user: '',
-    pass: '',
+    user: smtp.username,
+    pass: smtp.password,
   },
 });
 
