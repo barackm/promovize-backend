@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { sendConfirmationEmail } from '../services/mail';
 
 type SignUpMethod = 'google' | 'email' | 'unknown';
 
@@ -62,6 +63,10 @@ export const userCreated = functions.auth.user().onCreate(async (user) => {
     emailVerified: signUpMethod === 'email' ? false : true,
     authMethod: signUpMethod,
   };
+
+  if (signUpMethod === 'email') {
+    await sendConfirmationEmail(email || '', displayName || '');
+  }
 
   await usersCollection.doc(uid).set(userData);
 });
