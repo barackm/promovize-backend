@@ -2,7 +2,12 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthController } from './modules/auth/controllers/auth/auth.controller';
-import { I18nModule, QueryResolver, AcceptLanguageResolver } from 'nestjs-i18n';
+import {
+  I18nModule,
+  QueryResolver,
+  AcceptLanguageResolver,
+  I18nContext,
+} from 'nestjs-i18n';
 import * as path from 'path';
 @Module({
   imports: [
@@ -19,6 +24,6 @@ import * as path from 'path';
     }),
   ],
   controllers: [AppController, AuthController],
-  providers: [AppService],
+  providers: [AppService, I18nContext],
 })
 export class AppModule {}
