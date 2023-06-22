@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthController } from './auth/controllers/auth/auth.controller';
 import {
   I18nModule,
   QueryResolver,
@@ -10,8 +9,11 @@ import {
 } from 'nestjs-i18n';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
+import { UsersModule } from './modules/users/users.module';
 import * as path from 'path';
 import config from './config';
+import { AuthModule } from './modules/auth/auth.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -31,8 +33,10 @@ import config from './config';
       ],
     }),
     DatabaseModule,
+    UsersModule,
+    AuthModule,
   ],
-  controllers: [AppController, AuthController],
+  controllers: [AppController],
   providers: [AppService, I18nContext],
 })
 export class AppModule {}

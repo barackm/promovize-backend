@@ -1,7 +1,7 @@
-import { DBConfigService } from './database.service';
+import DefaultDbConfigService from './DefaultDbConfigService.service';
 
 export default {
-  ...new DBConfigService().createTypeOrmOptions(),
+  ...new DefaultDbConfigService().createTypeOrmOptions(),
   migrationsTableName: 'migrations',
   cli: {
     migrationsDir: 'src/database/migrations',
