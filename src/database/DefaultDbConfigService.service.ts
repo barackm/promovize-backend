@@ -13,8 +13,8 @@ export default class DefaultDbConfigService implements TypeOrmOptionsFactory {
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      synchronize: true, // Set to false in production
-      logging: true, // Set to false in production
+      synchronize: false, // Set to false in production
+      logging: ['error'],
       migrationsRun: process.env.RUN_MIGRATIONS === 'true',
       entities: [User],
       migrations: [join(__dirname, '/../migrations/*{.ts,.js}')],
