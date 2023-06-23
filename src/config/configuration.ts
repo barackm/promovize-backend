@@ -26,4 +26,8 @@ export default () => ({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: 'us-east-2',
   },
+  frontend: {
+    url: process.env.FRONTEND_URL,
+    deepLinkUrl: process.env.FRONTEND_DEEP_LINK_URL,
+  },
 });

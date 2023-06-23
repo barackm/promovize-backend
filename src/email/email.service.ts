@@ -74,14 +74,15 @@ export class EmailService {
   }
 
   async sendEmailVerificationEmail(user: any, token: string): Promise<void> {
+    const frontendConfig = this.configService.get('frontend');
+    const deepLink = `${frontendConfig.deepLinkUrl}/auth/verify-email?token=${token}`;
     try {
-      const verificationLink = `${process.env.APP_URL}/auth/verify-email?token=${token}`;
       await this.sendEmail({
         to: user.email,
         templateName: 'email-verification',
         context: {
           name: user.email,
-          verificationLink,
+          verificationLink: deepLink,
         },
       });
     } catch (error) {

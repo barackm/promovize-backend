@@ -17,7 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "generate-templates": "node src/email/templates/template.ts",
+    "create-email-templates": "aws ses create-template --cli-input-json file://src/email/templates/template.json",
+    "update-email-templates": "aws ses update-template --cli-input-json file://src/email/templates/template.json"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.359.0",
