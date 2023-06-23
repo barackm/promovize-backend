@@ -28,10 +28,11 @@ export class UsersService {
         email,
         password,
       });
-      newUser = await this.userRepository.save(newUser);
       const token = await this.authUtilsService.generateEmailVerificationToken(
         newUser,
       );
+      newUser.emailVerificationToken = token;
+      newUser = await this.userRepository.save(newUser);
       await this.emailService.sendEmailVerificationEmail(newUser, token);
       newUser = _.omit(newUser, hiddenFields);
       return newUser;
