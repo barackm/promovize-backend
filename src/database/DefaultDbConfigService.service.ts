@@ -2,7 +2,6 @@ import { join } from 'path';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/modules/users/entities/user.enitity';
-
 @Injectable()
 export default class DefaultDbConfigService implements TypeOrmOptionsFactory {
   createTypeOrmOptions(): TypeOrmModuleOptions {
@@ -13,7 +12,7 @@ export default class DefaultDbConfigService implements TypeOrmOptionsFactory {
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      synchronize: false, // Set to false in production
+      synchronize: false,
       logging: ['error'],
       migrationsRun: process.env.RUN_MIGRATIONS === 'true',
       entities: [User],

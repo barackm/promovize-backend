@@ -7,19 +7,20 @@ import {
   AcceptLanguageResolver,
   I18nContext,
 } from 'nestjs-i18n';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './modules/users/users.module';
 import * as path from 'path';
-import config from './config';
+import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      load: [configuration],
+      envFilePath: ['.env'],
       isGlobal: true,
-      load: [config],
     }),
     I18nModule.forRoot({
       fallbackLanguage: 'en',
@@ -32,11 +33,12 @@ import { AuthModule } from './modules/auth/auth.module';
         AcceptLanguageResolver,
       ],
     }),
+    EmailModule,
     DatabaseModule,
     UsersModule,
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, I18nContext],
+  providers: [AppService, I18nContext, ConfigService],
 })
 export class AppModule {}
