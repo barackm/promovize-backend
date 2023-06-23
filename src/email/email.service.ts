@@ -1,31 +1,73 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
-
-interface EmailOptions {
+import {
+  SESClient,
+  SendTemplatedEmailCommand,
+  SendEmailCommand,
+} from '@aws-sdk/client-ses';
+import { ConfigService } from '@nestjs/config';
+interface EmailData {
   to: string;
-  subject: string;
-  template?: string;
-  context?: any;
+  templateName: string;
+  context: any;
 }
-
 @Injectable()
 export class EmailService {
-  constructor(private readonly mailerService: MailerService) {}
+  private sesClient: SESClient;
 
-  async sendEmail({
-    to,
-    subject,
-    context,
-    template,
-  }: EmailOptions): Promise<void> {
+  constructor(private readonly configService: ConfigService) {
+    const awsConfig = this.configService.get('aws');
+    this.sesClient = new SESClient({
+      region: awsConfig.region,
+      credentials: {
+        accessKeyId: awsConfig.accessKeyId,
+        secretAccessKey: awsConfig.secretAccessKey,
+      },
+    });
+  }
+
+  async sendEmail({ to, templateName, context }: EmailData): Promise<void> {
+    const emailConfig = this.configService.get('email');
+    const params = {
+      Destination: {
+        ToAddresses: [to],
+      },
+      Template: templateName,
+      TemplateData: JSON.stringify(context),
+      Source: emailConfig.from,
+    };
+
     try {
-      await this.mailerService.sendMail({
-        to,
-        from: process.env.EMAIL_FROM,
-        subject,
-        template: template,
-        context,
-      });
+      const command = new SendTemplatedEmailCommand(params);
+      await this.sesClient.send(command);
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
+
+  async sendRawEmail({ to, subject, body }: any): Promise<void> {
+    const emailConfig = this.configService.get('email');
+    const params = {
+      Destination: {
+        ToAddresses: [to],
+      },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data: body,
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: subject,
+        },
+      },
+      Source: emailConfig.from,
+    };
+
+    try {
+      const command = new SendEmailCommand(params);
+      await this.sesClient.send(command);
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
@@ -36,12 +78,11 @@ export class EmailService {
       const verificationLink = `${process.env.APP_URL}/auth/verify-email?token=${token}`;
       await this.sendEmail({
         to: user.email,
-        subject: 'Verify Email',
+        templateName: 'email-verification',
         context: {
-          email: user.email,
+          name: user.email,
           verificationLink,
         },
-        template: 'verification',
       });
     } catch (error) {
       throw new HttpException(error.message, error.status);
