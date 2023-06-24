@@ -1,10 +1,11 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpExceptionFilter } from './globalFilters/httpException.filter';
 import { I18nService } from 'nestjs-i18n';
+import { GlobalExceptionFilter } from './globalFilters/globalException.filter';
 
 const bootstrap = async () => {
   const app = await NestFactory.create(AppModule);
@@ -20,6 +21,12 @@ const bootstrap = async () => {
 
   app.useGlobalFilters(
     new HttpExceptionFilter(i18nService, app.get(ConfigService)),
+    new GlobalExceptionFilter(
+      i18nService,
+      app.get(ConfigService),
+      app.get(HttpAdapterHost),
+      app.get(Logger),
+    ),
   );
 
   const config = new DocumentBuilder()

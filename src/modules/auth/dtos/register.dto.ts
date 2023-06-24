@@ -1,13 +1,11 @@
 import { IsEmail, MinLength, Matches } from 'class-validator';
-
 export class RegisterDto {
-  @IsEmail({}, { message: 'Invalid email address' })
+  @IsEmail({}, { message: 'validation.invalidEmailFormat' })
   email: string;
 
-  @MinLength(8)
+  @MinLength(8, { message: 'validation.passwordLength' })
   @Matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*\s)?[A-Za-z\d\s]{8,}$/, {
-    message:
-      'Password must be at least 8 characters and contain at least one letter, one number, and an optional space',
+    message: 'validation.passwordComplexity',
   })
   password: string;
 }

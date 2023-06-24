@@ -5,7 +5,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { ConfigService } from 'aws-sdk';
+import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { I18nService } from 'nestjs-i18n';
 
@@ -17,23 +17,24 @@ export class HttpExceptionFilter implements ExceptionFilter {
   ) {}
 
   async catch(exception: HttpException, host: ArgumentsHost) {
-    console.log('here we are');
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const status = exception.getStatus();
+    const env = this.configService.get('nodeEnv');
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       const message = await this.getErrorMessage('error.internalServerError');
       response.status(status).json({
         message,
-        statusCode: status,
         stack: exception.stack,
+        ...(env === 'development' ? { stack: exception.stack } : {}),
       });
     } else {
       const message = await this.getErrorMessage(exception.message);
       response.status(status).json({
         message,
         statusCode: status,
+        ...(env === 'development' ? { stack: exception.stack } : {}),
       });
     }
   }

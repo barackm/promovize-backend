@@ -2,6 +2,7 @@ export default () => ({
   app: {
     port: parseInt(process.env.PORT, 10) || 5001,
   },
+  nodeEnv: process.env.NODE_ENV,
   database: {
     host: process.env.DB_HOST,
     name: process.env.DB_NAME,
