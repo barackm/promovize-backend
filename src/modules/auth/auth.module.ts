@@ -6,7 +6,7 @@ import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.enitity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtStrategy } from './jwt.strategy';
-import { AuthUtilsService } from './authUtils.module';
+import { AuthUtilsService } from './authUtils.service';
 import { EmailService } from 'src/email/email.service';
 
 @Module({

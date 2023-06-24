@@ -1,0 +1,11 @@
+{
+  "internalServerError": "Internal Server Error",
+  "notFound": "Page Not Found",
+  "unauthorized": "Unauthorized",
+  "forbidden": "Forbidden",
+  "badRequest": "Bad Request",
+  "auth": {
+    "invalidCredentials": "Invalid credentials",
+    "userAlreadyExists": "User already exists"
+  }
+}

@@ -16,7 +16,7 @@ export default class DefaultDbConfigService implements TypeOrmOptionsFactory {
       username: dbConfig.user,
       password: dbConfig.password,
       database: dbConfig.name,
-      synchronize: false,
+      synchronize: true,
       logging: ['error'],
       migrationsRun: process.env.RUN_MIGRATIONS === 'true',
       entities: [User],

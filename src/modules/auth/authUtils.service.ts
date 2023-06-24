@@ -41,4 +41,14 @@ export class AuthUtilsService {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async isTokenExpired(token: string) {
+    try {
+      const decodedToken = this.jwtService.decode(token);
+      const isExpired = Date.now() >= decodedToken['exp'] * 1000;
+      return isExpired;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 }

@@ -3,9 +3,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import {
   I18nModule,
-  QueryResolver,
+  HeaderResolver,
   AcceptLanguageResolver,
   I18nContext,
+  QueryResolver,
 } from 'nestjs-i18n';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
@@ -23,13 +24,14 @@ import { EmailModule } from './email/email.module';
       isGlobal: true,
     }),
     I18nModule.forRoot({
-      fallbackLanguage: 'en',
+      fallbackLanguage: 'fr',
       loaderOptions: {
         path: path.join(__dirname, '/i18n/'),
         watch: true,
       },
       resolvers: [
-        { use: QueryResolver, options: ['lang'] },
+        new QueryResolver(['lang', 'l']),
+        new HeaderResolver(['x-custom-lang']),
         AcceptLanguageResolver,
       ],
     }),

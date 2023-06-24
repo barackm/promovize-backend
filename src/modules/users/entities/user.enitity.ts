@@ -49,13 +49,7 @@ export class User {
   emailVerificationToken: string;
 
   @Column({ nullable: true })
-  emailVerificationTokenExpiresAt: Date;
-
-  @Column({ nullable: true })
   passwordResetToken: string;
-
-  @Column({ nullable: true })
-  passwordResetTokenExpiresAt: Date;
 
   @Column({ nullable: true })
   googleId: string;
@@ -65,6 +59,9 @@ export class User {
 
   @Column({ nullable: true })
   googleRefreshToken: string;
+
+  @Column({ nullable: true })
+  refreshToken: string;
 
   @BeforeInsert()
   async hashPassword() {
