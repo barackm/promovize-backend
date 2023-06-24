@@ -1,7 +1,7 @@
 export enum AuthRoutes {
   root = 'auth',
-  login = 'signin',
-  register = 'signup',
+  login = 'login',
+  register = 'register',
   verifyEmail = 'verify-email',
   forgotPassword = 'forgot-password',
   resetPassword = 'reset-password',
