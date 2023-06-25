@@ -31,4 +31,7 @@ export default () => ({
     url: process.env.FRONTEND_URL,
     deepLinkUrl: process.env.FRONTEND_DEEP_LINK_URL,
   },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+  },
 });

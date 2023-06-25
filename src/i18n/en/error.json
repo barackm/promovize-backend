@@ -6,6 +6,8 @@
   "badRequest": "Bad Request",
   "auth": {
     "invalidCredentials": "Invalid credentials",
-    "userAlreadyExists": "User already exists"
+    "userAlreadyExists": "User already exists",
+    "emailNotVerified": "Email not verified",
+    "userNotFound": "User not found"
   }
 }

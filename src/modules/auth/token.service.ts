@@ -2,12 +2,11 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class AuthUtilsService {
+export class TokenService {
   constructor(private readonly jwtService: JwtService) {}
 
   async generateAuthToken(user?: any) {
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-
     const payload = {
       sub: user.id,
       email: user.email,
@@ -16,6 +15,7 @@ export class AuthUtilsService {
 
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: 60 * 60 * 24 * 10,
+      secret: 'secret',
     });
     return token;
   }
@@ -29,17 +29,9 @@ export class AuthUtilsService {
     };
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: 60 * 60 * 24 * 3,
+      secret: 'secret',
     });
     return token;
-  }
-
-  async validateToken(token: string) {
-    try {
-      const payload = await this.jwtService.verifyAsync(token);
-      return payload;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
   }
 
   async isTokenExpired(token: string) {
@@ -50,5 +42,19 @@ export class AuthUtilsService {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  async genarateRefreshToken(user?: any) {
+    if (!user)
+      throw new HttpException('error.auth.userNotFound', HttpStatus.NOT_FOUND);
+    const payload = {
+      sub: user.id,
+      email: user.email,
+    };
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: 60 * 60 * 24 * 30,
+      secret: 'secret',
+    });
+    return token;
   }
 }

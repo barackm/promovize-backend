@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 import * as bcrypt from 'bcryptjs';
+import { IsOptional, IsString } from 'class-validator';
 
 export type AuthMethod = 'email' | 'google';
 
@@ -33,8 +34,10 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
-  password: string;
+  @Column({ nullable: true })
+  @IsOptional()
+  @IsString()
+  password: string | null;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -55,24 +58,19 @@ export class User {
   googleId: string;
 
   @Column({ nullable: true })
-  googleAccessToken: string;
-
-  @Column({ nullable: true })
-  googleRefreshToken: string;
-
-  @Column({ nullable: true })
   refreshToken: string;
+
+  @Column({ nullable: true })
+  picture: string;
 
   @BeforeInsert()
   async hashPassword() {
-    const salt = await bcrypt.genSalt();
-    this.password = await bcrypt.hash(this.password, salt);
     if (this.authMethod === 'google') {
       this.password = null;
     } else {
+      const salt = await bcrypt.genSalt();
+      this.password = await bcrypt.hash(this.password, salt);
       this.googleId = null;
-      this.googleAccessToken = null;
-      this.googleRefreshToken = null;
     }
   }
 }
