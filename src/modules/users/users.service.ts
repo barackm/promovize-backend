@@ -37,9 +37,15 @@ export class UsersService {
     );
     newUser.emailVerificationToken = token;
     newUser = await this.userRepository.save(newUser);
+
+    const refreshToken = await this.tokenService.generateRefreshToken(newUser);
+    newUser.refreshToken = refreshToken;
+    newUser = await this.userRepository.save(newUser);
     // await this.emailService.sendEmailVerificationEmail(newUser, token);
     newUser = _.omit(newUser, hiddenFields);
-    return newUser;
+    return {
+      user: newUser,
+    };
   }
 
   async findOne(id: number) {
@@ -118,7 +124,7 @@ export class UsersService {
       });
 
       newUser = await this.userRepository.save(newUser);
-      const refreshToken = await this.tokenService.genarateRefreshToken({
+      const refreshToken = await this.tokenService.generateRefreshToken({
         email,
         id: newUser.id,
       });

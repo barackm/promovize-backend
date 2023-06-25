@@ -42,6 +42,14 @@ export class AuthService {
 
   async verifyGoogleIdToken(token: string) {
     try {
+      const isExpired = await this.tokenService.isTokenExpired(token);
+
+      if (isExpired) {
+        throw new HttpException(
+          'error.auth.tokenExpired',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const ticket = await this.googleClient.verifyIdToken({
         idToken: token,
         audience: [this.googleClientId],
@@ -80,16 +88,18 @@ export class AuthService {
         user = await this.usersService.createUserFromGoogleProfile(userProfile);
       }
 
-      const authToken = await this.tokenService.generateAuthToken(user);
+      const accessToken = await this.tokenService.generateAccessToken(user);
       const refreshToken = user.refreshToken;
       return {
         user: _.omit(user, hiddenFields),
-        authToken,
+        accessToken,
         refreshToken,
       };
-      return user;
     } catch (error) {
-      throw error;
+      throw new HttpException(
+        error.message,
+        error.status || HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }

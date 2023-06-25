@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 export class TokenService {
   constructor(private readonly jwtService: JwtService) {}
 
-  async generateAuthToken(user?: any) {
+  async generateAccessToken(user?: any) {
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     const payload = {
       sub: user.id,
@@ -44,7 +44,7 @@ export class TokenService {
     }
   }
 
-  async genarateRefreshToken(user?: any) {
+  async generateRefreshToken(user?: any) {
     if (!user)
       throw new HttpException('error.auth.userNotFound', HttpStatus.NOT_FOUND);
     const payload = {

@@ -8,6 +8,7 @@
     "invalidCredentials": "Invalid credentials",
     "userAlreadyExists": "User already exists",
     "emailNotVerified": "Email not verified",
-    "userNotFound": "User not found"
+    "userNotFound": "User not found",
+    "tokenExpired": "The provided token has expired 😢"
   }
 }
