@@ -24,7 +24,7 @@ import { EmailModule } from './email/email.module';
       isGlobal: true,
     }),
     I18nModule.forRoot({
-      fallbackLanguage: 'fr',
+      fallbackLanguage: 'en',
       loaderOptions: {
         path: path.join(__dirname, '/i18n/'),
         watch: true,

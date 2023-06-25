@@ -22,9 +22,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     const env = this.configService.get('nodeEnv');
 
+    if (!response) {
+      return;
+    }
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       const message = await this.getErrorMessage('error.internalServerError');
-      response.status(status).json({
+      response?.status(status).json({
         message,
         stack: exception.stack,
         ...(env === 'development' ? { stack: exception.stack } : {}),

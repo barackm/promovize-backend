@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RegisterDto } from '../auth/dtos/register.dto';
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, hiddenFields } from './entities/user.enitity';

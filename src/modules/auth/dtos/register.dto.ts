@@ -1,4 +1,5 @@
 import { IsEmail, MinLength, Matches } from 'class-validator';
+
 export class RegisterDto {
   @IsEmail({}, { message: 'validation.invalidEmailFormat' })
   email: string;

@@ -24,7 +24,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   async catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const { httpAdapter } = this.httpAdapter;
-    const status = exception.getStatus();
+    const status = exception.getStatus() || HttpStatus.INTERNAL_SERVER_ERROR;
     const env = this.configService.get('NODE_ENV');
     this.logger.error(exception);
     const resBody = {};
@@ -32,16 +32,21 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (env === 'development') {
       resBody['stack'] = exception.stack;
     }
+
     if (exception instanceof BadRequestException) {
       const validationErrors = exception.getResponse();
       const firstErrorMessage = Object.values(
         validationErrors as Record<string, any>,
       )[0];
       if (Array.isArray(firstErrorMessage)) {
-        const translatedError = await this.getErrorMessage(
-          firstErrorMessage[0],
+        const translatedErrors = await Promise.all(
+          firstErrorMessage.map(async (error) => {
+            const translatedError = await this.getErrorMessage(error);
+            return translatedError;
+          }),
         );
-        resBody['message'] = translatedError;
+
+        resBody['message'] = translatedErrors.join(', ');
       } else {
         const translatedError = await this.getErrorMessage(
           firstErrorMessage['message'],
@@ -58,7 +63,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       resBody['message'] = message;
       resBody['statusCode'] = status;
     }
-
     httpAdapter.reply(ctx.getResponse<Response>(), resBody, status);
   }
 
