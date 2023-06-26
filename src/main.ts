@@ -18,7 +18,17 @@ const bootstrap = async () => {
       forbidNonWhitelisted: true,
     }),
   );
-
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'X-Requested-With',
+      'x-custom-lang',
+    ],
+  });
   app.useGlobalFilters(
     new HttpExceptionFilter(i18nService, app.get(ConfigService)),
     new GlobalExceptionFilter(

@@ -1,4 +1,13 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { RegisterDto } from '../dtos/register.dto';
 import { ApiTags, ApiResponse, ApiBody, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from 'src/modules/users/users.service';
@@ -7,6 +16,9 @@ import { VerifyEmailDto } from '../dtos/verifyEmail.dto';
 import { ConfigService } from '@nestjs/config';
 import { GoogleSigninDto } from '../dtos/googleSignin.dto';
 import { AuthService } from '../auth.service';
+import { AuthGuard } from 'src/guards/auth/auth.guard';
+import * as _ from 'lodash';
+import { hiddenFields } from 'src/modules/users/entities/user.enitity';
 @ApiTags('Authentification')
 @Controller(AuthRoutes.root)
 export class AuthController {
@@ -32,10 +44,10 @@ export class AuthController {
     },
   })
   async register(@Body() registerDto: RegisterDto) {
+    console.log('RegisterDto', registerDto);
     return await this.usersService.create(registerDto);
   }
 
-  // confirm email
   @Post(AuthRoutes.verifyEmail)
   @ApiResponse({
     status: HttpStatus.OK,
@@ -46,7 +58,7 @@ export class AuthController {
     // return await this.usersService.verifyEmail(body.token);
   }
 
-  @Post('google/redirect')
+  @Post(AuthRoutes.googleAuthRedirect)
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The user has been successfully verified.',
@@ -54,5 +66,25 @@ export class AuthController {
   @ApiOperation({ summary: 'Verify a user idToken with google' })
   async googleAuthRedirect(@Body() body: GoogleSigninDto) {
     return await this.authService.verifyGoogleIdToken(body.idToken);
+  }
+
+  @Get(AuthRoutes.me)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User data has been successfully retrieved.',
+  })
+  @ApiOperation({ summary: 'Get user data' })
+  @UseGuards(AuthGuard)
+  async getUserData(@Req() request: any) {
+    try {
+      const user = await request.user;
+      const userData = await this.usersService.findOne(user.sub);
+      return { user: _.omit(userData, hiddenFields) };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'error.internalServerError',
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 }

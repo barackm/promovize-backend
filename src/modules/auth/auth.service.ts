@@ -24,20 +24,11 @@ export class AuthService {
 
   async verifyEmail(token: string) {
     try {
-      await this.validateToken(token);
+      await this.tokenService.validateToken(token);
       const isExpired = await this.tokenService.isTokenExpired(token);
       if (isExpired) {
       }
     } catch (error) {}
-  }
-
-  async validateToken(token: string) {
-    try {
-      const payload = await this.jwtService.verifyAsync(token);
-      return payload;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
   }
 
   async verifyGoogleIdToken(token: string) {

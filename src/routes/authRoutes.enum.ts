@@ -6,4 +6,6 @@ export enum AuthRoutes {
   forgotPassword = 'forgot-password',
   resetPassword = 'reset-password',
   changePassword = 'change-password',
+  googleAuthRedirect = 'google/redirect',
+  me = 'me',
 }

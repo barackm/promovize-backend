@@ -57,4 +57,33 @@ export class TokenService {
     });
     return token;
   }
+
+  async decodeToken(token: string) {
+    try {
+      const decodedToken = await this.jwtService.verifyAsync(token, {
+        secret: 'secret',
+      });
+      return decodedToken;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async validateToken(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: 'secret',
+      });
+      const isExpired = await this.isTokenExpired(token);
+      if (isExpired) {
+        throw new HttpException(
+          'error.auth.tokenExpired',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return payload;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 }
