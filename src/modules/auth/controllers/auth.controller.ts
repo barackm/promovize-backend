@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -44,18 +45,19 @@ export class AuthController {
     },
   })
   async register(@Body() registerDto: RegisterDto) {
-    console.log('RegisterDto', registerDto);
-    return await this.usersService.create(registerDto);
+    const { prefix } = registerDto;
+    return await this.usersService.create(registerDto, prefix);
   }
 
-  @Post(AuthRoutes.verifyEmail)
+  @Get(AuthRoutes.verifyEmail)
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The user has been successfully verified.',
   })
   @ApiOperation({ summary: 'Verify a user email' })
-  async verifyEmail(@Body() body: VerifyEmailDto) {
-    // return await this.usersService.verifyEmail(body.token);
+  async verifyEmail(@Query() query: any) {
+    const { token } = query;
+    return await this.authService.verifyEmail(token);
   }
 
   @Post(AuthRoutes.googleAuthRedirect)

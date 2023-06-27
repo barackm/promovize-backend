@@ -17,7 +17,7 @@ export class UsersService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async create(createUserDto: RegisterDto) {
+  async create(createUserDto: RegisterDto, prefix: string) {
     const { email, password } = createUserDto;
     const existingUser = await this.userRepository.findOne({
       where: { email },
@@ -37,11 +37,7 @@ export class UsersService {
     );
     newUser.emailVerificationToken = token;
     newUser = await this.userRepository.save(newUser);
-
-    const refreshToken = await this.tokenService.generateRefreshToken(newUser);
-    newUser.refreshToken = refreshToken;
-    newUser = await this.userRepository.save(newUser);
-    // await this.emailService.sendEmailVerificationEmail(newUser, token);
+    await this.emailService.sendEmailVerificationEmail(newUser, token, prefix);
     newUser = _.omit(newUser, hiddenFields);
     return {
       user: newUser,
@@ -54,7 +50,10 @@ export class UsersService {
         where: { id },
       });
       if (!user) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'error.auth.userNotFound',
+          HttpStatus.NOT_FOUND,
+        );
       }
       return user;
     } catch (error) {
@@ -68,7 +67,10 @@ export class UsersService {
         where: { id: payload.sub },
       });
       if (!user) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'error.auth.userNotFound',
+          HttpStatus.NOT_FOUND,
+        );
       }
       return user;
     } catch (error) {
@@ -82,7 +84,10 @@ export class UsersService {
         where: { emailVerificationToken: token },
       });
       if (!user) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'error.auth.userNotFound',
+          HttpStatus.NOT_FOUND,
+        );
       }
       return user;
     } catch (error) {
@@ -96,6 +101,15 @@ export class UsersService {
         where: { email },
       });
       return user;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async saveUser(user: User) {
+    try {
+      const savedUser = await this.userRepository.save(user);
+      return savedUser;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

@@ -1,4 +1,4 @@
-import { IsEmail, MinLength, Matches } from 'class-validator';
+import { IsEmail, MinLength, Matches, IsOptional } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail({}, { message: 'validation.invalidEmailFormat' })
@@ -9,4 +9,7 @@ export class RegisterDto {
     message: 'validation.passwordComplexity',
   })
   password: string;
+
+  @IsOptional()
+  prefix: string;
 }

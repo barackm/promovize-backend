@@ -24,11 +24,39 @@ export class AuthService {
 
   async verifyEmail(token: string) {
     try {
-      await this.tokenService.validateToken(token);
-      const isExpired = await this.tokenService.isTokenExpired(token);
-      if (isExpired) {
+      const decodedToken = await this.tokenService.validateToken(token);
+      const { email } = decodedToken;
+      let user = await this.usersService.findOneByEmail(email);
+      if (!user) {
+        throw new HttpException(
+          'error.auth.userNotFound',
+          HttpStatus.BAD_REQUEST,
+        );
       }
-    } catch (error) {}
+
+      if (user.emailVerified) {
+        throw new HttpException(
+          'error.auth.emailAlreadyVerified',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const accessToken = await this.tokenService.generateAccessToken(user);
+      const refreshToken = await this.tokenService.generateRefreshToken(user);
+      user.emailVerified = true;
+      user.emailVerificationToken = null;
+      user.refreshToken = refreshToken;
+      user = await this.usersService.saveUser(user);
+      return {
+        user: _.omit(user, hiddenFields),
+        accessToken,
+        refreshToken,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message,
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async verifyGoogleIdToken(token: string) {

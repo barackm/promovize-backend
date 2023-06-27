@@ -1,13 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import {
-  I18nModule,
-  HeaderResolver,
-  AcceptLanguageResolver,
-  I18nContext,
-  QueryResolver,
-} from 'nestjs-i18n';
+import { I18nModule, HeaderResolver, I18nContext } from 'nestjs-i18n';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './modules/users/users.module';
@@ -29,11 +23,7 @@ import { EmailModule } from './email/email.module';
         path: path.join(__dirname, '/i18n/'),
         watch: true,
       },
-      resolvers: [
-        new QueryResolver(['lang', 'l']),
-        new HeaderResolver(['x-custom-lang']),
-        AcceptLanguageResolver,
-      ],
+      resolvers: [new HeaderResolver(['x-custom-lang'])],
     }),
     EmailModule,
     DatabaseModule,
