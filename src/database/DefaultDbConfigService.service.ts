@@ -3,6 +3,7 @@ import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/modules/users/entities/user.enitity';
 import { ConfigService } from '@nestjs/config';
+import { Status } from 'src/modules/statuses/entities/status.entity';
 @Injectable()
 export default class DefaultDbConfigService implements TypeOrmOptionsFactory {
   constructor(private configService: ConfigService) {}
@@ -19,7 +20,7 @@ export default class DefaultDbConfigService implements TypeOrmOptionsFactory {
       synchronize: true,
       logging: ['error'],
       migrationsRun: process.env.RUN_MIGRATIONS === 'true',
-      entities: [User],
+      entities: [User, Status],
       migrations: [join(__dirname, '/../migrations/*{.ts,.js}')],
     };
   }

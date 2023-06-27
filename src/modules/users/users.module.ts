@@ -7,9 +7,11 @@ import { JwtService } from '@nestjs/jwt';
 import { EmailService } from 'src/email/email.service';
 import { ConfigService } from 'aws-sdk';
 import { TokenService } from '../auth/token.service';
+import { StatusesService } from '../statuses/statuses.service';
+import { Status } from '../statuses/entities/status.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User, Status])],
   controllers: [UsersController],
   providers: [
     UsersService,
@@ -17,6 +19,7 @@ import { TokenService } from '../auth/token.service';
     EmailService,
     ConfigService,
     TokenService,
+    StatusesService,
   ],
 })
 export class UsersModule {}

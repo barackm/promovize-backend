@@ -8,6 +8,8 @@ import { EmailService } from 'src/email/email.service';
 import { ErrorMessages } from 'src/shared/enums/error.enum';
 import { GoogleSigninUser } from 'src/shared/interfaces/auth.interface';
 import { TokenService } from '../auth/token.service';
+import { StatusesService } from '../statuses/statuses.service';
+import { StatusName } from '../statuses/entities/status.entity';
 
 @Injectable()
 export class UsersService {
@@ -15,6 +17,7 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
     private readonly emailService: EmailService,
     private readonly tokenService: TokenService,
+    private readonly statusService: StatusesService,
   ) {}
 
   async create(createUserDto: RegisterDto, prefix: string) {
@@ -35,7 +38,11 @@ export class UsersService {
     const token = await this.tokenService.generateEmailVerificationToken(
       newUser,
     );
+    const status = await this.statusService.getStatusByLabel(
+      StatusName.pending,
+    );
     newUser.emailVerificationToken = token;
+    newUser.status = status;
     newUser = await this.userRepository.save(newUser);
     await this.emailService.sendEmailVerificationEmail(newUser, token, prefix);
     newUser = _.omit(newUser, hiddenFields);
@@ -127,6 +134,10 @@ export class UsersService {
         return existingUser;
       }
 
+      const userStatus = await this.statusService.getStatusByLabel(
+        StatusName.active,
+      );
+
       let newUser = this.userRepository.create({
         authMethod: 'google',
         email,
@@ -135,6 +146,7 @@ export class UsersService {
         lastName: family_name,
         googleId: sub,
         picture,
+        status: userStatus,
       });
 
       newUser = await this.userRepository.save(newUser);

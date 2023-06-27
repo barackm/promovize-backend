@@ -6,10 +6,12 @@ import {
   UpdateDateColumn,
   Index,
   BeforeInsert,
+  ManyToOne,
 } from 'typeorm';
 
 import * as bcrypt from 'bcryptjs';
 import { IsOptional, IsString } from 'class-validator';
+import { Status } from 'src/modules/statuses/entities/status.entity';
 
 export type AuthMethod = 'email' | 'google';
 
@@ -73,6 +75,9 @@ export class User {
       this.googleId = null;
     }
   }
+
+  @ManyToOne(() => Status, (status) => status.users)
+  status: Status;
 }
 
 export type hiddenFields =

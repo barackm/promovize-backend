@@ -2,10 +2,11 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
-import { JwtService } from '@nestjs/jwt';
 import * as _ from 'lodash';
 import { TokenService } from './token.service';
 import { hiddenFields } from '../users/entities/user.enitity';
+import { StatusesService } from '../statuses/statuses.service';
+import { StatusName } from '../statuses/entities/status.entity';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +16,7 @@ export class AuthService {
   constructor(
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
+    private readonly statusesService: StatusesService,
     private readonly tokenService: TokenService,
   ) {
     this.googleClientId = this.configService.get<string>('google.clientId');
@@ -42,9 +43,14 @@ export class AuthService {
       }
       const accessToken = await this.tokenService.generateAccessToken(user);
       const refreshToken = await this.tokenService.generateRefreshToken(user);
+      const status = await this.statusesService.getStatusByLabel(
+        StatusName.incomplete,
+      );
+
       user.emailVerified = true;
       user.emailVerificationToken = null;
       user.refreshToken = refreshToken;
+      user.status = status;
       user = await this.usersService.saveUser(user);
       return {
         user: _.omit(user, hiddenFields),

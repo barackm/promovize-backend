@@ -9,6 +9,7 @@ import * as path from 'path';
 import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { EmailModule } from './email/email.module';
+import { StatusesModule } from './modules/statuses/statuses.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { EmailModule } from './email/email.module';
     DatabaseModule,
     UsersModule,
     AuthModule,
+    StatusesModule,
   ],
   controllers: [AppController],
   providers: [AppService, I18nContext, ConfigService],

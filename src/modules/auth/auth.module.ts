@@ -10,10 +10,12 @@ import { EmailService } from 'src/email/email.service';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { TokenService } from './token.service';
+import { StatusesService } from '../statuses/statuses.service';
+import { Status } from '../statuses/entities/status.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Status]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: 'secret',
@@ -29,6 +31,7 @@ import { TokenService } from './token.service';
     ConfigService,
     JwtService,
     TokenService,
+    StatusesService,
   ],
 })
 export class AuthModule {}
