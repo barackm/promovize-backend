@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RegisterDto } from '../auth/dtos/register.dto';
 import * as _ from 'lodash';
+import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, hiddenFields } from './entities/user.enitity';
@@ -159,6 +160,18 @@ export class UsersService {
       return newUser;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async validatePassword(password: string, hashedPassword: string) {
+    try {
+      const isPasswordValid = await bcrypt.compare(password, hashedPassword);
+      return isPasswordValid;
+    } catch (error) {
+      throw new HttpException(
+        'error.auth.invalidEmailOrPassword',
+        error.status || HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }

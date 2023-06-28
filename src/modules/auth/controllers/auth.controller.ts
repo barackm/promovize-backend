@@ -13,13 +13,13 @@ import { RegisterDto } from '../dtos/register.dto';
 import { ApiTags, ApiResponse, ApiBody, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from 'src/modules/users/users.service';
 import { AuthRoutes } from 'src/routes/authRoutes.enum';
-import { VerifyEmailDto } from '../dtos/verifyEmail.dto';
 import { ConfigService } from '@nestjs/config';
 import { GoogleSigninDto } from '../dtos/googleSignin.dto';
 import { AuthService } from '../auth.service';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
 import * as _ from 'lodash';
 import { hiddenFields } from 'src/modules/users/entities/user.enitity';
+import { LoginDto } from '../dtos/login.dto';
 @ApiTags('Authentification')
 @Controller(AuthRoutes.root)
 export class AuthController {
@@ -88,5 +88,16 @@ export class AuthController {
         HttpStatus.NOT_FOUND,
       );
     }
+  }
+
+  @Post(AuthRoutes.login)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User has been successfully logged in.',
+  })
+  @ApiOperation({ summary: 'Login a user' })
+  async login(@Body() body: LoginDto) {
+    const { email, password } = body;
+    return await this.authService.login(email, password);
   }
 }

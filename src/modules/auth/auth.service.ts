@@ -7,6 +7,7 @@ import { TokenService } from './token.service';
 import { hiddenFields } from '../users/entities/user.enitity';
 import { StatusesService } from '../statuses/statuses.service';
 import { StatusName } from '../statuses/entities/status.entity';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
@@ -115,6 +116,34 @@ export class AuthService {
 
       const accessToken = await this.tokenService.generateAccessToken(user);
       const refreshToken = user.refreshToken;
+      return {
+        user: _.omit(user, hiddenFields),
+        accessToken,
+        refreshToken,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message,
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async login(email: string, password: string) {
+    try {
+      const user = await this.usersService.findOneByEmail(email);
+      if (!user) {
+        throw new HttpException(
+          'error.auth.invalidEmailOrPassword',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      await this.usersService.validatePassword(password, user.password);
+      const accessToken = await this.tokenService.generateAccessToken(user);
+      const refreshToken = await this.tokenService.generateRefreshToken(user);
+      user.refreshToken = refreshToken;
+      await this.usersService.saveUser(user);
+
       return {
         user: _.omit(user, hiddenFields),
         accessToken,

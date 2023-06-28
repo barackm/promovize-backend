@@ -10,6 +10,7 @@
     "emailNotVerified": "Email not verified",
     "userNotFound": "User not found",
     "tokenExpired": "The provided token has expired 😢",
-    "emailAlreadyVerified": "Email already verified"
+    "emailAlreadyVerified": "Email already verified",
+    "invalidEmailOrPassword": "Invalid email or password"
   }
 }
