@@ -86,4 +86,25 @@ export class TokenService {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async generateForgotPasswordToken(user?: any) {
+    try {
+      if (!user)
+        throw new HttpException(
+          'error.auth.userNotFound',
+          HttpStatus.NOT_FOUND,
+        );
+      const payload = {
+        sub: user.id,
+        email: user.email,
+      };
+      const token = await this.jwtService.signAsync(payload, {
+        expiresIn: 60 * 60 * 24 * 3,
+        secret: 'secret',
+      });
+      return token;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 }

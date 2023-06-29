@@ -11,6 +11,7 @@
     "userNotFound": "User not found",
     "tokenExpired": "The provided token has expired 😢",
     "emailAlreadyVerified": "Email already verified",
-    "invalidEmailOrPassword": "Invalid email or password"
+    "invalidEmailOrPassword": "Invalid email or password",
+    "invalidEmail": "Invalid email"
   }
 }

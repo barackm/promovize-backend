@@ -8,6 +8,7 @@ import { hiddenFields } from '../users/entities/user.enitity';
 import { StatusesService } from '../statuses/statuses.service';
 import { StatusName } from '../statuses/entities/status.entity';
 import * as bcrypt from 'bcryptjs';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly statusesService: StatusesService,
     private readonly tokenService: TokenService,
+    private readonly emailService: EmailService,
   ) {
     this.googleClientId = this.configService.get<string>('google.clientId');
     this.googleClient = new OAuth2Client(this.googleClientId);
@@ -148,6 +150,31 @@ export class AuthService {
         user: _.omit(user, hiddenFields),
         accessToken,
         refreshToken,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message,
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async forgotPassword(email: string, prefix) {
+    try {
+      const user = await this.usersService.findOneByEmail(email);
+      if (!user) {
+        throw new HttpException(
+          'error.auth.invalidEmail',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const token = await this.tokenService.generateForgotPasswordToken(user);
+      user.passwordResetToken = token;
+      await this.usersService.saveUser(user);
+      await this.emailService.sendPasswordResetEmail(user, token, prefix);
+      return {
+        message: 'events.auth.reset_password_email_sent',
       };
     } catch (error) {
       throw new HttpException(

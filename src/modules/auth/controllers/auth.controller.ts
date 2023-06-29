@@ -100,4 +100,15 @@ export class AuthController {
     const { email, password } = body;
     return await this.authService.login(email, password);
   }
+
+  @Post(AuthRoutes.forgotPassword)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password reset email has been successfully sent.',
+  })
+  @ApiOperation({ summary: 'Send a password reset email' })
+  async forgotPassword(@Body() body: any) {
+    const { email, prefix } = body;
+    return await this.authService.forgotPassword(email, prefix);
+  }
 }

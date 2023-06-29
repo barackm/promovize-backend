@@ -10,5 +10,15 @@ const emailVerificationTemplate = {
 };
 const templatesJSON = JSON.stringify(emailVerificationTemplate, null, 2);
 
-fs.writeFileSync(__dirname + '/template.json', templatesJSON);
+const resetPasswordTemplate = {
+  Template: {
+    TemplateName: 'reset-password',
+    SubjectPart: 'Reset your password',
+    HtmlPart: fs.readFileSync(__dirname + '/reset-password.hbs', 'utf8'),
+  },
+};
+
+const resetPasswordJSON = JSON.stringify(resetPasswordTemplate, null, 2);
+
+fs.writeFileSync(__dirname + '/template.json', resetPasswordJSON);
 module.exports = emailVerificationTemplate;

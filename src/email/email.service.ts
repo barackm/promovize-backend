@@ -93,4 +93,25 @@ export class EmailService {
       throw new HttpException(error.message, error.status);
     }
   }
+
+  async sendPasswordResetEmail(
+    user: any,
+    token: string,
+    prefix: string,
+  ): Promise<void> {
+    const frontendConfig = this.configService.get('frontend');
+    const deepLink = `${prefix || frontendConfig.deepLinkUrl}?token=${token}`;
+    try {
+      await this.sendEmail({
+        to: user.email,
+        templateName: 'reset-password',
+        context: {
+          name: `${user.firstName || user.email} 👋`,
+          resetPasswordLink: deepLink,
+        },
+      });
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
 }
