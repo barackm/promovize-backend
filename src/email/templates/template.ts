@@ -8,7 +8,6 @@ const emailVerificationTemplate = {
     HtmlPart: fs.readFileSync(__dirname + '/email-verification.hbs', 'utf8'),
   },
 };
-const templatesJSON = JSON.stringify(emailVerificationTemplate, null, 2);
 
 const resetPasswordTemplate = {
   Template: {
@@ -18,7 +17,26 @@ const resetPasswordTemplate = {
   },
 };
 
+const passwordCreationRequestTemplate = {
+  Template: {
+    TemplateName: 'google-password-creation',
+    SubjectPart: 'Create your password',
+    HtmlPart: fs.readFileSync(
+      __dirname + '/google-password-creation.hbs',
+      'utf8',
+    ),
+  },
+};
+
+const templatesJSON = JSON.stringify(emailVerificationTemplate, null, 2);
+
 const resetPasswordJSON = JSON.stringify(resetPasswordTemplate, null, 2);
 
-fs.writeFileSync(__dirname + '/template.json', resetPasswordJSON);
+const passwordCreationJSON = JSON.stringify(
+  passwordCreationRequestTemplate,
+  null,
+  2,
+);
+
+fs.writeFileSync(__dirname + '/template.json', passwordCreationJSON);
 module.exports = emailVerificationTemplate;

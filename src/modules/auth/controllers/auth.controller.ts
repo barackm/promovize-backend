@@ -13,7 +13,6 @@ import { RegisterDto } from '../dtos/register.dto';
 import { ApiTags, ApiResponse, ApiBody, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from 'src/modules/users/users.service';
 import { AuthRoutes } from 'src/routes/authRoutes.enum';
-import { ConfigService } from '@nestjs/config';
 import { GoogleSigninDto } from '../dtos/googleSignin.dto';
 import { AuthService } from '../auth.service';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
@@ -21,12 +20,13 @@ import * as _ from 'lodash';
 import { hiddenFields } from 'src/modules/users/entities/user.enitity';
 import { LoginDto } from '../dtos/login.dto';
 import { ResetPasswordDto } from '../dtos/resetPassword.dto';
+import { CreatePasswordDto } from '../dtos/createPassword.dto';
+import { PasswordCreationRequestDto } from '../dtos/passwordCreationRequest.dto';
 @ApiTags('Authentification')
 @Controller(AuthRoutes.root)
 export class AuthController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly configService: ConfigService,
     private readonly authService: AuthService,
   ) {}
 
@@ -122,5 +122,29 @@ export class AuthController {
   async resetPassword(@Body() body: ResetPasswordDto) {
     const { token, password } = body;
     return await this.authService.resetPassword(token, password);
+  }
+
+  @Post(AuthRoutes.requestGooglePasswordCreation)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password creation email has been successfully sent.',
+  })
+  @ApiOperation({ summary: 'Send a password creation email' })
+  async requestGooglePasswordCreation(
+    @Body() body: PasswordCreationRequestDto,
+  ) {
+    const { email, prefix } = body;
+    return await this.authService.requestGooglePasswordCreation(email, prefix);
+  }
+
+  @Post(AuthRoutes.createPassword)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password has been successfully created.',
+  })
+  @ApiOperation({ summary: 'Create a user password' })
+  async createPassword(@Body() body: CreatePasswordDto) {
+    const { token, password } = body;
+    return await this.authService.createPassword(token, password);
   }
 }

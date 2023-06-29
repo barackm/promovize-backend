@@ -14,6 +14,8 @@
     "invalidEmailOrPassword": "Invalid email or password",
     "invalidEmail": "Invalid email",
     "invalidToken": "Invalid token",
-    "passwordsSame": "New password must be different from old password"
+    "passwordsSame": "New password must be different from old password",
+    "notGoogleUser": "You did not sign up with Google",
+    "account_created_with_google": "You created your account with Google. Please sign in with Google, or request a password creation link."
   }
 }

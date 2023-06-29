@@ -26,35 +26,29 @@ export class AuthService {
     this.googleClient = new OAuth2Client(this.googleClientId);
   }
 
-  async verifyEmail(token: string) {
+  async login(email: string, password: string) {
     try {
-      const decodedToken = await this.tokenService.validateToken(token);
-      const { email } = decodedToken;
-      let user = await this.usersService.findOneByEmail(email);
+      const user = await this.usersService.findOneByEmail(email);
       if (!user) {
         throw new HttpException(
-          'error.auth.userNotFound',
+          'error.auth.invalidEmailOrPassword',
           HttpStatus.BAD_REQUEST,
         );
       }
 
-      if (user.emailVerified) {
+      if (user.googleId && !user.password) {
         throw new HttpException(
-          'error.auth.emailAlreadyVerified',
+          'error.auth.account_created_with_google',
           HttpStatus.BAD_REQUEST,
         );
       }
+
+      await this.usersService.validatePassword(password, user.password);
       const accessToken = await this.tokenService.generateAccessToken(user);
       const refreshToken = await this.tokenService.generateRefreshToken(user);
-      const status = await this.statusesService.getStatusByLabel(
-        StatusName.incomplete,
-      );
-
-      user.emailVerified = true;
-      user.emailVerificationToken = null;
       user.refreshToken = refreshToken;
-      user.status = status;
-      user = await this.usersService.saveUser(user);
+      await this.usersService.saveUser(user);
+
       return {
         user: _.omit(user, hiddenFields),
         accessToken,
@@ -131,21 +125,35 @@ export class AuthService {
     }
   }
 
-  async login(email: string, password: string) {
+  async verifyEmail(token: string) {
     try {
-      const user = await this.usersService.findOneByEmail(email);
+      const decodedToken = await this.tokenService.validateToken(token);
+      const { email } = decodedToken;
+      let user = await this.usersService.findOneByEmail(email);
       if (!user) {
         throw new HttpException(
-          'error.auth.invalidEmailOrPassword',
+          'error.auth.userNotFound',
           HttpStatus.BAD_REQUEST,
         );
       }
-      await this.usersService.validatePassword(password, user.password);
+
+      if (user.emailVerified) {
+        throw new HttpException(
+          'error.auth.emailAlreadyVerified',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const accessToken = await this.tokenService.generateAccessToken(user);
       const refreshToken = await this.tokenService.generateRefreshToken(user);
-      user.refreshToken = refreshToken;
-      await this.usersService.saveUser(user);
+      const status = await this.statusesService.getStatusByLabel(
+        StatusName.incomplete,
+      );
 
+      user.emailVerified = true;
+      user.emailVerificationToken = null;
+      user.refreshToken = refreshToken;
+      user.status = status;
+      user = await this.usersService.saveUser(user);
       return {
         user: _.omit(user, hiddenFields),
         accessToken,
@@ -223,6 +231,91 @@ export class AuthService {
 
       return {
         message: 'events.auth.password_reset_success',
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message,
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async requestGooglePasswordCreation(email: string, prefix) {
+    try {
+      const user = await this.usersService.findOneByEmail(email);
+      if (!user) {
+        throw new HttpException(
+          'error.auth.invalidEmail',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (!user.googleId) {
+        throw new HttpException(
+          'error.auth.notGoogleUser',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const token = await this.tokenService.generateForgotPasswordToken(user);
+      user.passwordResetToken = token;
+      await this.usersService.saveUser(user);
+      await this.emailService.sendGooglePasswordCreationEmail(
+        user,
+        token,
+        prefix,
+      );
+      return {
+        message: 'events.auth.create_password_email_sent',
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message,
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async createPassword(token: string, password: string) {
+    try {
+      const decodedToken = await this.tokenService.validateToken(token);
+      const { email } = decodedToken;
+      let user = await this.usersService.findOneByEmail(email);
+
+      if (!user) {
+        throw new HttpException(
+          'error.auth.invalidEmail',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (!user.googleId) {
+        throw new HttpException(
+          'error.auth.notGoogleUser',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const tokensSame = user.passwordResetToken === token;
+      if (!tokensSame) {
+        throw new HttpException(
+          'error.auth.invalidToken',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
+      user.emailVerified = true;
+      const accessToken = await this.tokenService.generateAccessToken(user);
+      const refreshToken = await this.tokenService.generateRefreshToken(user);
+      user.refreshToken = refreshToken;
+      user = await this.usersService.saveUser(user);
+
+      return {
+        user: _.omit(user, hiddenFields),
+        accessToken,
+        refreshToken,
       };
     } catch (error) {
       throw new HttpException(
