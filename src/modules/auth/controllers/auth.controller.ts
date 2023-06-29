@@ -20,6 +20,7 @@ import { AuthGuard } from 'src/guards/auth/auth.guard';
 import * as _ from 'lodash';
 import { hiddenFields } from 'src/modules/users/entities/user.enitity';
 import { LoginDto } from '../dtos/login.dto';
+import { ResetPasswordDto } from '../dtos/resetPassword.dto';
 @ApiTags('Authentification')
 @Controller(AuthRoutes.root)
 export class AuthController {
@@ -110,5 +111,16 @@ export class AuthController {
   async forgotPassword(@Body() body: any) {
     const { email, prefix } = body;
     return await this.authService.forgotPassword(email, prefix);
+  }
+
+  @Post(AuthRoutes.resetPassword)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password has been successfully reset.',
+  })
+  @ApiOperation({ summary: 'Reset a user password' })
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    const { token, password } = body;
+    return await this.authService.resetPassword(token, password);
   }
 }

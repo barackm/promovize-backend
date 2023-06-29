@@ -1,5 +1,6 @@
 {
   "auth": {
-    "reset_password_email_sent": "Reset password email sent"
+    "reset_password_email_sent": "Reset password email sent",
+    "password_reset_success": "Password reset successfully"
   }
 }

@@ -183,4 +183,52 @@ export class AuthService {
       );
     }
   }
+
+  async resetPassword(token: string, password: string) {
+    try {
+      const decodedToken = await this.tokenService.validateToken(token);
+      const { email } = decodedToken;
+      const user = await this.usersService.findOneByEmail(email);
+
+      if (!user) {
+        throw new HttpException(
+          'error.auth.invalidEmail',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const tokensSame = user.passwordResetToken === token;
+      if (!tokensSame) {
+        throw new HttpException(
+          'error.auth.invalidToken',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const passwordsSame = await bcrypt.compare(
+        password,
+        user.passwordResetToken,
+      );
+
+      if (passwordsSame) {
+        throw new HttpException(
+          'error.auth.passwordsSame',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
+      user.passwordResetToken = null;
+      await this.usersService.saveUser(user);
+
+      return {
+        message: 'events.auth.password_reset_success',
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message,
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 }

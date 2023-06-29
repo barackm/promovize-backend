@@ -12,6 +12,8 @@
     "tokenExpired": "The provided token has expired 😢",
     "emailAlreadyVerified": "Email already verified",
     "invalidEmailOrPassword": "Invalid email or password",
-    "invalidEmail": "Invalid email"
+    "invalidEmail": "Invalid email",
+    "invalidToken": "Invalid token",
+    "passwordsSame": "New password must be different from old password"
   }
 }
