@@ -1,0 +1,9 @@
+{
+  "auth": {
+    "reset_password_email_sent": "Reset password email sent",
+    "password_reset_success": "Password reset successfully, please login again.",
+    "create_password_email_sent": "Create password email sent",
+    "password_update_success": "Password updated successfully, please login again.",
+    "password_create_success": "Password created successfully, please login again."
+  }
+}

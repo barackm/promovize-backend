@@ -1,0 +1,22 @@
+{
+  "internalServerError": "Internal Server Error",
+  "notFound": "Page Not Found",
+  "unauthorized": "Unauthorized",
+  "forbidden": "Forbidden",
+  "badRequest": "Bad Request",
+  "auth": {
+    "invalidCredentials": "Invalid credentials",
+    "userAlreadyExists": "User already exists",
+    "emailNotVerified": "Email not verified",
+    "userNotFound": "User not found",
+    "tokenExpired": "The provided token has expired 😢",
+    "emailAlreadyVerified": "Email already verified",
+    "invalidEmailOrPassword": "Invalid email or password",
+    "invalidEmail": "User with this email does not exist",
+    "invalidToken": "Invalid token",
+    "passwordsSame": "New password must be different from old password",
+    "notGoogleUser": "You did not sign up with Google",
+    "account_created_with_google": "You created your account with Google. Please sign in with Google, or request a password creation link.",
+    "wrongPassword": "Wrong password"
+  }
+}
