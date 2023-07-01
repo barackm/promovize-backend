@@ -1,0 +1,5 @@
+{
+  "invalidEmailFormat": "Invalid email format.",
+  "passwordLength": "Password should be at least 8 characters long.",
+  "passwordComplexity": "Password should contain at least one number."
+}
