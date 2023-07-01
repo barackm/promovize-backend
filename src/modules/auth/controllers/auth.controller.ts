@@ -2,9 +2,9 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
   HttpStatus,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -16,12 +16,12 @@ import { AuthRoutes } from 'src/routes/authRoutes.enum';
 import { GoogleSigninDto } from '../dtos/googleSignin.dto';
 import { AuthService } from '../auth.service';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
-import * as _ from 'lodash';
-import { hiddenFields } from 'src/modules/users/entities/user.enitity';
 import { LoginDto } from '../dtos/login.dto';
 import { ResetPasswordDto } from '../dtos/resetPassword.dto';
 import { CreatePasswordDto } from '../dtos/createPassword.dto';
 import { PasswordCreationRequestDto } from '../dtos/passwordCreationRequest.dto';
+import { UpdatePasswordDto } from '../dtos/updatePassword.dto';
+import { ForgotPasswordDto } from '../dtos/forgotPassword.dto';
 @ApiTags('Authentification')
 @Controller(AuthRoutes.root)
 export class AuthController {
@@ -34,17 +34,10 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'The user has been successfully created.',
+    type: RegisterDto,
   })
   @ApiOperation({ summary: 'Register a new user' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        email: { type: 'string' },
-        password: { type: 'string' },
-      },
-    },
-  })
+  @ApiBody({ type: RegisterDto })
   async register(@Body() registerDto: RegisterDto) {
     const { prefix } = registerDto;
     return await this.usersService.create(registerDto, prefix);
@@ -65,7 +58,9 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The user has been successfully verified.',
+    type: GoogleSigninDto,
   })
+  @ApiBody({ type: GoogleSigninDto })
   @ApiOperation({ summary: 'Verify a user idToken with google' })
   async googleAuthRedirect(@Body() body: GoogleSigninDto) {
     return await this.authService.verifyGoogleIdToken(body.idToken);
@@ -79,23 +74,17 @@ export class AuthController {
   @ApiOperation({ summary: 'Get user data' })
   @UseGuards(AuthGuard)
   async getUserData(@Req() request: any) {
-    try {
-      const user = await request.user;
-      const userData = await this.usersService.findOne(user.sub);
-      return { user: _.omit(userData, hiddenFields) };
-    } catch (error) {
-      throw new HttpException(
-        error.message || 'error.internalServerError',
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    const { user } = request;
+    return await this.usersService.getUserDetails(user.sub);
   }
 
   @Post(AuthRoutes.login)
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'User has been successfully logged in.',
+    type: LoginDto,
   })
+  @ApiBody({ type: LoginDto })
   @ApiOperation({ summary: 'Login a user' })
   async login(@Body() body: LoginDto) {
     const { email, password } = body;
@@ -106,9 +95,11 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Password reset email has been successfully sent.',
+    type: ForgotPasswordDto,
   })
+  @ApiBody({ type: ForgotPasswordDto })
   @ApiOperation({ summary: 'Send a password reset email' })
-  async forgotPassword(@Body() body: any) {
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
     const { email, prefix } = body;
     return await this.authService.forgotPassword(email, prefix);
   }
@@ -117,7 +108,9 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Password has been successfully reset.',
+    type: ResetPasswordDto,
   })
+  @ApiBody({ type: ResetPasswordDto })
   @ApiOperation({ summary: 'Reset a user password' })
   async resetPassword(@Body() body: ResetPasswordDto) {
     const { token, password } = body;
@@ -128,7 +121,9 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Password creation email has been successfully sent.',
+    type: PasswordCreationRequestDto,
   })
+  @ApiBody({ type: PasswordCreationRequestDto })
   @ApiOperation({ summary: 'Send a password creation email' })
   async requestGooglePasswordCreation(
     @Body() body: PasswordCreationRequestDto,
@@ -141,10 +136,31 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Password has been successfully created.',
+    type: CreatePasswordDto,
   })
+  @ApiBody({ type: CreatePasswordDto })
   @ApiOperation({ summary: 'Create a user password' })
   async createPassword(@Body() body: CreatePasswordDto) {
     const { token, password } = body;
     return await this.authService.createPassword(token, password);
+  }
+
+  @Put(AuthRoutes.updatePassword)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password has been successfully updated.',
+    type: UpdatePasswordDto,
+  })
+  @ApiBody({ type: UpdatePasswordDto })
+  @ApiOperation({ summary: 'Update a user password' })
+  @UseGuards(AuthGuard)
+  async updatePassword(@Req() request: any, @Body() body: UpdatePasswordDto) {
+    const { oldPassword, password } = body;
+    const user = await request.user;
+    return await this.authService.updatePassword(
+      user.sub,
+      oldPassword,
+      password,
+    );
   }
 }

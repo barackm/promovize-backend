@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RegisterDto } from '../auth/dtos/register.dto';
-import * as _ from 'lodash';
-import * as bcrypt from 'bcryptjs';
+import { omit } from 'lodash';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, hiddenFields } from './entities/user.enitity';
@@ -46,7 +45,7 @@ export class UsersService {
     newUser.status = status;
     newUser = await this.userRepository.save(newUser);
     await this.emailService.sendEmailVerificationEmail(newUser, token, prefix);
-    newUser = _.omit(newUser, hiddenFields);
+    newUser = omit(newUser, hiddenFields);
     return {
       user: newUser,
     };
@@ -163,14 +162,17 @@ export class UsersService {
     }
   }
 
-  async validatePassword(password: string, hashedPassword: string) {
+  async getUserDetails(id: number) {
     try {
-      const isPasswordValid = await bcrypt.compare(password, hashedPassword);
-      return isPasswordValid;
+      const userData = await this.userRepository.findOne({
+        where: { id },
+        relations: ['status'],
+      });
+      return { user: omit(userData, hiddenFields) };
     } catch (error) {
       throw new HttpException(
-        'error.auth.invalidEmailOrPassword',
-        error.status || HttpStatus.BAD_REQUEST,
+        error.message || 'error.internalServerError',
+        HttpStatus.NOT_FOUND,
       );
     }
   }

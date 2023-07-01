@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
-import * as _ from 'lodash';
+import { omit } from 'lodash';
 import { TokenService } from './token.service';
 import { hiddenFields } from '../users/entities/user.enitity';
 import { StatusesService } from '../statuses/statuses.service';
@@ -43,14 +43,24 @@ export class AuthService {
         );
       }
 
-      await this.usersService.validatePassword(password, user.password);
+      const isValidPassword = await this.validatePassword(
+        password,
+        user.password,
+      );
+      if (!isValidPassword) {
+        throw new HttpException(
+          'error.auth.invalidEmailOrPassword',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const accessToken = await this.tokenService.generateAccessToken(user);
       const refreshToken = await this.tokenService.generateRefreshToken(user);
       user.refreshToken = refreshToken;
       await this.usersService.saveUser(user);
 
       return {
-        user: _.omit(user, hiddenFields),
+        user: omit(user, hiddenFields),
         accessToken,
         refreshToken,
       };
@@ -60,6 +70,11 @@ export class AuthService {
         error.status || HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+  async validatePassword(password: string, hashedPassword: string) {
+    const isPasswordValid = await bcrypt.compare(password, hashedPassword);
+    return isPasswordValid;
   }
 
   async verifyGoogleIdToken(token: string) {
@@ -113,7 +128,7 @@ export class AuthService {
       const accessToken = await this.tokenService.generateAccessToken(user);
       const refreshToken = user.refreshToken;
       return {
-        user: _.omit(user, hiddenFields),
+        user: omit(user, hiddenFields),
         accessToken,
         refreshToken,
       };
@@ -155,7 +170,7 @@ export class AuthService {
       user.status = status;
       user = await this.usersService.saveUser(user);
       return {
-        user: _.omit(user, hiddenFields),
+        user: omit(user, hiddenFields),
         accessToken,
         refreshToken,
       };
@@ -280,7 +295,7 @@ export class AuthService {
     try {
       const decodedToken = await this.tokenService.validateToken(token);
       const { email } = decodedToken;
-      let user = await this.usersService.findOneByEmail(email);
+      const user = await this.usersService.findOneByEmail(email);
 
       if (!user) {
         throw new HttpException(
@@ -307,15 +322,57 @@ export class AuthService {
       const hashedPassword = await bcrypt.hash(password, 10);
       user.password = hashedPassword;
       user.emailVerified = true;
-      const accessToken = await this.tokenService.generateAccessToken(user);
-      const refreshToken = await this.tokenService.generateRefreshToken(user);
-      user.refreshToken = refreshToken;
-      user = await this.usersService.saveUser(user);
+      user.passwordResetToken = null;
+      await this.usersService.saveUser(user);
 
       return {
-        user: _.omit(user, hiddenFields),
-        accessToken,
-        refreshToken,
+        message: 'events.auth.password_create_success',
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message,
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async updatePassword(
+    userId: number,
+    oldPassword: string,
+    newPassword: string,
+  ) {
+    try {
+      const user = await this.usersService.findOne(userId);
+      if (!user) {
+        throw new HttpException(
+          'error.auth.userNotFound',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const passwordsSame = await bcrypt.compare(oldPassword, user.password);
+      if (!passwordsSame) {
+        throw new HttpException(
+          'error.auth.wrongPassword',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const newPasswordsSame = await bcrypt.compare(newPassword, user.password);
+      if (newPasswordsSame) {
+        throw new HttpException(
+          'error.auth.passwordsSame',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      user.passwordResetToken = null;
+      await this.usersService.saveUser(user);
+
+      return {
+        message: 'events.auth.password_update_success',
       };
     } catch (error) {
       throw new HttpException(

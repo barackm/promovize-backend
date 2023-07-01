@@ -5,9 +5,9 @@ export enum AuthRoutes {
   verifyEmail = 'verify-email',
   forgotPassword = 'forgot-password',
   resetPassword = 'reset-password',
-  changePassword = 'change-password',
   googleAuthRedirect = 'google/redirect',
   me = 'me',
   createPassword = 'create-password',
   requestGooglePasswordCreation = 'request-google-password-creation',
+  updatePassword = 'update-password',
 }
